@@ -34,7 +34,9 @@ app.use(
 
 mongoose
   .connect(
-    `mongodb+srv://m001-student:@pbvsW954014@sandbox.qayhg.mongodb.net/events?retryWrites=true&w=majority`,
+    `mongodb+srv://${process.env.MONGO_USER}:${
+      process.env.MONGO_PASSWORD
+    }@sandbox.qayhg.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
     {
   useNewUrlParser: true,
   useUnifiedTopology: true,
