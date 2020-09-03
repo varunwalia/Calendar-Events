@@ -43,7 +43,7 @@ app.use(
 
 
 //cron job to check and delete the expired events
-cron.schedule("* */20 * * *", async () =>  {
+cron.schedule("0 */20 * * *", async () =>  {
   console.log("checking for expired evets after every 20 hours");
   let date = new Date()
   // output = await Event.deleteOne({_id: ObjectId("5f50e83f220a1659b576fce9")});
