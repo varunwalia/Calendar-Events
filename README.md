@@ -1,6 +1,6 @@
 # Calendar-Events
 
-An API has been created to using GraphQL and NodeJS to save events to the database.
+An API has been created using GraphQL and NodeJS to save events to the database.
 
 #### To bring up the project:
 
