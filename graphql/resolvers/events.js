@@ -1,13 +1,22 @@
 const Event = require('../../models/event');
 const User = require('../../models/user');
+const { resolveFieldValueOrError } = require('graphql/execution/execute');
 var ObjectId = require('mongodb').ObjectID;
+const findEvents = (userId,date)=>{
+  console.log(date)
+  Event.find({ creator: ObjectId( userId),
+  date: new Date(date)} , (err,result)=>{
+   if (err) {
+     throw err;
+   }
+   return result       
+ }
+)}
 
 module.exports = {
   events: (args , req) => {
-    return Event.find({creator: ObjectId("5f507ab7ec12d23c77dce6d6")} ).then(rows=>rows).catch(err=> {throw err})
-    // Use this for authentication purpose
-    // return Event.find({creator: req.userId} ).then(rows=>rows).catch(err=> {throw err})
-
+    console.log("Events" , req.isAuth)
+    return Event.find({creator: ObjectId(req.userId)} ).then(rows=>rows).catch(err=> {throw err})
   },
   
   createEvent: async (args, req) => {
@@ -17,50 +26,53 @@ module.exports = {
       date: new Date(args.eventInput.date),
       startTime: new Date(args.eventInput.date+"T"+args.eventInput.startTime),
       endTime: new Date(args.eventInput.date+"T"+args.eventInput.endTime),
-      creator: ObjectId("5f507ab7ec12d23c77dce6d6")
+      creator: ObjectId(req.userId)
     });
     // YYYY-mm-ddTHH:MM:ss
-    let createdEvent;
+    console.log(event)
     try {
       const today = new Date();
       if (event.startTime < today || event.startTime>=event.endTime ){
         throw new Error("You cannot assign events in the past")
       }
       // const creator = await User.findById(req.userId); // Use this for authentication purpose
-      const creator = await User.findById("5f507ab7ec12d23c77dce6d6");  
+      const creator = await User.findById(req.userId);  
       if (!creator) {
         throw new Error('User not found.');
       }
       let flag=true;
-      const eventsForDay = await Event.find({ creator: ObjectId("5f507ab7ec12d23c77dce6d6"),
-       date: new Date(args.eventInput.date)} , (err,res)=>{
-        if (err) {
-          throw err;
+  
+      const res = await Event.find({ creator: ObjectId( req.userId),
+        date: new Date(event.date)} , (err,result)=>{
+         if (err) {
+           throw err;
+         }
+         return result       
+       }
+      )
+//       console.log(res)
+      const newStart = event.startTime; 
+      const newEnd = event.endTime;  
+      for (let i=0;i<res.length;i++)
+      {
+        if ((res[i].startTime===newEnd) || (res[i].endTime===newStart)){
+          flag=false;
+          break
         }
-        const newStart = event.startTime; 
-        const newEnd = event.endTime;  
-        res.forEach(event => {
-          if ((event.startTime===newEnd) || (event.endTime===newStart)){
-            // console.log(event)
+        else if ((newStart>=res[i].startTime && newStart<=res[i].endTime) 
+                || (newEnd <= res[i].startTime && newEnd>=res[i].startTime)) {   
             flag=false;
+            break;
           }
-          else if ((newStart>=event.startTime && newStart<=event.endTime) 
-                  || (newEnd <= event.startTime && newEnd>=event.startTime)) {
-              // console.log(event)
-              flag=false;
-            }
-          else if (newStart<=event.startTime && newEnd>=event.endTime)
-          {
-            // console.log(event)
-            flag=false;
-          }
-        })
-      })
-      // console.log(flag)
+        else if (newStart<=res[i].startTime && newEnd>=res[i].endTime)
+        {
+          flag=false;
+          break;
+        }
+      }
       if (!flag){
         throw new Error("Event Collision")
       }
-      
       creator.createdEvents.push(event);
       const result = await event.save();
       await creator.save();
