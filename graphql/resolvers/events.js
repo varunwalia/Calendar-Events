@@ -2,20 +2,10 @@ const Event = require('../../models/event');
 const User = require('../../models/user');
 const { resolveFieldValueOrError } = require('graphql/execution/execute');
 var ObjectId = require('mongodb').ObjectID;
-const findEvents = (userId,date)=>{
-  console.log(date)
-  Event.find({ creator: ObjectId( userId),
-  date: new Date(date)} , (err,result)=>{
-   if (err) {
-     throw err;
-   }
-   return result       
- }
-)}
+
 
 module.exports = {
   events: (args , req) => {
-    console.log("Events" , req.isAuth)
     return Event.find({creator: ObjectId(req.userId)} ).then(rows=>rows).catch(err=> {throw err})
   },
   
