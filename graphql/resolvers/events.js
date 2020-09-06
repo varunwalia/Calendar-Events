@@ -19,7 +19,7 @@ module.exports = {
       creator: ObjectId(req.userId)
     });
     // YYYY-mm-ddTHH:MM:ss
-    console.log(event)
+//     console.log(event)
     try {
       const today = new Date();
       if (event.startTime < today || event.startTime>=event.endTime ){
@@ -32,14 +32,7 @@ module.exports = {
       }
       let flag=true;
   
-      const res = await Event.find({ creator: ObjectId( req.userId),
-        date: new Date(event.date)} , (err,result)=>{
-         if (err) {
-           throw err;
-         }
-         return result       
-       }
-      )
+      const res = await Event.find({ creator: ObjectId( req.userId), date: new Date(event.date)})
 //       console.log(res)
       const newStart = event.startTime; 
       const newEnd = event.endTime;  
